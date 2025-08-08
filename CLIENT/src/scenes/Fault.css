@@ -1,0 +1,80 @@
+.square-window {
+  width: 420px;
+  height: 420px;
+  border: 2px solid black;
+  position: relative;
+  margin: 20px auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s;
+  background-color: #ffd966;
+}
+
+.square-window:hover {
+  transform: scale(1.05);
+}
+
+.inner-squares {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  height: 100%;
+  width: 100%;
+}
+
+.square {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  margin: 10px;
+  transition: background-color 0.3s, transform 0.3s;
+  padding: 1rem;
+  border-radius: 15px;
+  background-color: #ff4500;
+}
+
+.square:hover {
+  background-color: #ffd966;
+  transform: translateY(-5px);
+}
+
+.square img {
+  width: 80%;
+  border-radius: 10px;
+}
+
+.info {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: black;
+  text-align: center;
+}
+
+.arrow {
+  font-size: 24px;
+  color: #ff4500;
+  transition: transform 0.3s;
+}
+
+.square:hover .arrow {
+  transform: scale(1.2);
+}
+
+.specific-upload{
+  display: inline-block;
+  padding: 10px 20px;
+  margin-top: 20px;
+  background-color: #ff4500;
+  color: #ff4500;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.specific-upload:hover {
+  background-color: #ffd966;
+  color: black;
+}
+  
