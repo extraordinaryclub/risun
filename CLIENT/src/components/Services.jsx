@@ -3,13 +3,8 @@ import Heading from "./Heading";
 import { service1, service2, service3, check } from "../assets";
 import { risunServices, risunServicesIcons } from "../constants";
 import {
-  PhotoChatMessage,
-  // Gradient,
   VideoBar,
-  VideoChatMessage,
 } from "./design/Services";
-
-import Generating from "./Generating";
 
 const Services = () => {
   return (
@@ -54,7 +49,7 @@ const Services = () => {
               </ul>
             </div>
 
-            <Generating className="absolute left-4 right-4 bottom-4 border-n-1/10 border lg:left-1/2 lg-right-auto lg:bottom-8 lg:-translate-x-1/2" />
+
           </div>
 
           <div className="relative z-1 grid gap-5 lg:grid-cols-2">
@@ -77,7 +72,7 @@ const Services = () => {
                 </p>
               </div>
 
-              <PhotoChatMessage />
+
             </div>
 
             <div className="p-4 bg-n-7 rounded-3xl overflow-hidden lg:min-h-[46rem]">
@@ -121,7 +116,6 @@ const Services = () => {
                   alt="Scary robot"
                 />
 
-                <VideoChatMessage />
                 <VideoBar />
               </div>
             </div>
