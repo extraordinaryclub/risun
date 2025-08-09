@@ -55,15 +55,28 @@ async function insertLocation({ organization_id, location_name, latitude, longit
         latitude,
         longitude
     });
-    return result;
+    
+    // Return both the result and the inserted document info
+    return {
+        ...result,
+        insertedId: result.insertedId,
+        affectedRows: result.acknowledged ? 1 : 0
+    };
 }
 
 async function fetchLocationsByOrganizationId(organization_id) {
     const db = await dbconnection();
     const locations = await db.collection('locations').find({
         organization_id: new ObjectId(organization_id)  // Same here
-    }, { projection: { id: 1, location_name: 1, latitude: 1, longitude: 1 } }).toArray();
-    return locations;
+    }, { projection: { _id: 1, location_name: 1, latitude: 1, longitude: 1 } }).toArray();
+    
+    // Transform _id to id for frontend compatibility
+    return locations.map(location => ({
+        id: location._id.toString(),
+        location_name: location.location_name,
+        latitude: location.latitude,
+        longitude: location.longitude
+    }));
 }
 
 async function deleteLocationByName(location_name, organization_id) {
@@ -72,7 +85,12 @@ async function deleteLocationByName(location_name, organization_id) {
         location_name,
         organization_id: new ObjectId(organization_id)  // Same here
     });
-    return result;
+    
+    // Return MongoDB result with affectedRows for compatibility
+    return {
+        ...result,
+        affectedRows: result.deletedCount
+    };
 }
 
 module.exports = {

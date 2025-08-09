@@ -40,7 +40,7 @@ const navItems = [
   {
     text: "Monitoring",
     icon: <LocationOn />,
-    path: "visualizations",
+    path: "monitoring",
   },
   {
     text: "Solar Power Forecast",

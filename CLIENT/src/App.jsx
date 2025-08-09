@@ -121,10 +121,7 @@ const router = createBrowserRouter([
         path: "/admin",
         element: <ProtectedRoute element={<Admin />} />,
       },
-      {
-        path: "/visualizations",
-        element: <ProtectedRoute element={<Visualizations />} />,
-      },
+
       {
         path: "/location/:id",
         element: <ProtectedRoute element={<WeatherDetails />} />,
