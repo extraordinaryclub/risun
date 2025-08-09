@@ -52,11 +52,17 @@ export async function loginUser(credentials) {
 // Function to fetch prediction data
 export async function fetchPrediction(data) {
   try {
-    const response = await Axios.post('https://cors-anywhere.herokuapp.com/https://ppgmodel-production.up.railway.app/predict/gb', data);
-    console.log(response.data);
+    console.log('🔍 PREDICTION DEBUG - Making request to ML service');
+    console.log('🔍 PREDICTION DEBUG - Data:', data);
+    
+    const response = await Axios.post('https://ppgmodel-production.up.railway.app/predict/gb', data);
+    console.log('✅ PREDICTION DEBUG - Success:', response.data);
     return Promise.resolve(response.data);
   } catch (error) {
-    return Promise.reject({ error: error.response.data.error });
+    console.error('❌ PREDICTION DEBUG - Error:', error);
+    console.error('❌ PREDICTION DEBUG - Status:', error.response?.status);
+    console.error('❌ PREDICTION DEBUG - Response:', error.response?.data);
+    return Promise.reject({ error: error.response?.data?.error || error.message || 'Prediction failed' });
   }
 }
 
@@ -140,25 +146,29 @@ export async function DeleteLocation(location_name) {
 
 export const fetchFaultPrediction = async (formData) => {
   try {
+    console.log('🔍 FAULT DETECTION DEBUG - Making request to ML service');
+    console.log('🔍 FAULT DETECTION DEBUG - FormData:', formData);
+    
     const response = await fetch(
-      "https://cors-anywhere.herokuapp.com/https://faultdetmodel-production.up.railway.app/predict/",
+      "https://faultdetmodel-production.up.railway.app/predict/",
       {
-        // Replace with your ngrok URL
         method: "POST",
         body: formData,
-        
       }
     );
 
+    console.log('🔍 FAULT DETECTION DEBUG - Response status:', response.status);
+
     if (!response.ok) {
-      // Throw an error with the status code for better debugging
+      console.error('❌ FAULT DETECTION DEBUG - HTTP Error:', response.status, response.statusText);
       throw new Error(`Server responded with status ${response.status}`);
     }
 
-    // Parse the JSON response from the server
-    return await response.json();
+    const result = await response.json();
+    console.log('✅ FAULT DETECTION DEBUG - Success:', result);
+    return result;
   } catch (error) {
-    console.error("Error details:", error);
+    console.error("❌ FAULT DETECTION DEBUG - Error:", error);
     throw error;
   }
 };
