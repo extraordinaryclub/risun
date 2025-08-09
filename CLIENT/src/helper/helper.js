@@ -4,26 +4,47 @@ Axios.defaults.baseURL = import.meta.env.VITE_REACT_APP_SERVER_DOMAIN;
 
 export async function SignUp(credentials) {
   try {
+    console.log('🔍 REGISTER DEBUG - Making request to:', Axios.defaults.baseURL + '/api/register');
+    console.log('🔍 REGISTER DEBUG - Credentials:', credentials);
+    
     const { data: { msg } } = await Axios.post('/api/register', credentials);
+    
+    console.log('✅ REGISTER DEBUG - Success response:', msg);
     return Promise.resolve(msg);
   } catch (error) {
-    return Promise.reject({ error });
+    console.error('❌ REGISTER DEBUG - Error:', error);
+    console.error('❌ REGISTER DEBUG - Error response:', error.response?.data);
+    console.error('❌ REGISTER DEBUG - Error status:', error.response?.status);
+    
+    return Promise.reject({ error: error.response?.data || error.message || 'Registration failed' });
   }
 }
 
 export async function loginUser(credentials) {
   try {
+    console.log('🔍 LOGIN DEBUG - Making request to:', Axios.defaults.baseURL + '/api/login');
+    console.log('🔍 LOGIN DEBUG - Credentials:', credentials);
+    
     const { data } = await Axios.post('/api/login', credentials);
     
+    console.log('✅ LOGIN DEBUG - Success response:', data);
+    
     // Store user info in sessionStorage
-    console.log(data.user.organizationName);
     sessionStorage.setItem('email', data.user.email);
     sessionStorage.setItem('organizationName', data.user.organizationName);
     
     // Return the user data to set it in Redux
     return data.user;
   } catch (error) {
-    return Promise.reject({ error: error.response.data.error });
+    console.error('❌ LOGIN DEBUG - Error:', error);
+    console.error('❌ LOGIN DEBUG - Error response:', error.response?.data);
+    console.error('❌ LOGIN DEBUG - Error status:', error.response?.status);
+    
+    if (error.response?.data?.error) {
+      return Promise.reject({ error: error.response.data.error });
+    } else {
+      return Promise.reject({ error: error.message || 'Login failed' });
+    }
   }
 }
 
