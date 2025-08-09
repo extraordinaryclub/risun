@@ -4,7 +4,8 @@ import "./Fault.css";
 import image1 from "../assets/fault/image-1 (1).jpeg";
 import image3 from "../assets/fault/image-3.jpg";
 import PropTypes from "prop-types";
-import { fetchFaultPrediction } from "../helper/helper"; // Ensure this path is correct
+import { fetchFaultPrediction } from "../helper/helper";
+import FaultTestingPanel from "../components/FaultTestingPanel";
 
 const Container = styled.div`
   display: flex;
@@ -230,6 +231,8 @@ const Fault = () => {
   const [predictionData, setPredictionData] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [error, setError] = useState(null);
+  const [isTestingMode, setIsTestingMode] = useState(true); // Enable testing mode by default in this branch
+  const [lastTestedScenario, setLastTestedScenario] = useState(null);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -240,6 +243,20 @@ const Fault = () => {
     setError(null);
 
     speakText("Image has been uploaded.");
+  };
+
+  // Handler for mock scenario testing
+  const handleMockScenario = (mockResponse, scenarioName) => {
+    setLastTestedScenario(scenarioName);
+    setPredictionData({
+      faultType: mockResponse.predicted_class,
+      confidence: mockResponse.confidence,
+      recommendations: mockResponse.recommendations || [],
+      tips: mockResponse.tips || [],
+    });
+    setError(null);
+    
+    speakText(`Testing scenario: ${scenarioName}. The fault type is ${mockResponse.predicted_class} with a confidence of ${(mockResponse.confidence * 100).toFixed(2)}%.`);
   };
 
   const handleSubmit = async () => {
@@ -272,7 +289,49 @@ const Fault = () => {
 
   return (
     <Container>
-      <Heading>Solar Panel Fault Prediction</Heading>
+      {/* Testing Panel - Only visible in feat/fault-pred-variants branch */}
+      <FaultTestingPanel 
+        onScenarioSelect={handleMockScenario}
+        isVisible={isTestingMode}
+      />
+      
+      {/* Testing Mode Toggle */}
+      <div style={{
+        position: 'fixed',
+        top: '10px',
+        right: '10px',
+        background: isTestingMode ? '#10B981' : '#EF4444',
+        color: 'white',
+        padding: '8px 16px',
+        borderRadius: '20px',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        zIndex: 1000,
+        cursor: 'pointer'
+      }} onClick={() => setIsTestingMode(!isTestingMode)}>
+        {isTestingMode ? '🧪 TESTING MODE' : '🚀 LIVE MODE'}
+      </div>
+
+      {/* Show last tested scenario info */}
+      {lastTestedScenario && isTestingMode && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#3B82F6',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '8px',
+          fontSize: '12px',
+          zIndex: 1000,
+          maxWidth: '200px'
+        }}>
+          <div style={{ fontWeight: 'bold' }}>Last Tested:</div>
+          <div>{lastTestedScenario}</div>
+        </div>
+      )}
+
+      <Heading>Solar Panel Fault Prediction {isTestingMode && '🧪'}</Heading>
       <StepContainer>
         <StepImage>
           <img src={image1} alt="Step 1" />
