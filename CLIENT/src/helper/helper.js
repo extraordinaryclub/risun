@@ -4,7 +4,7 @@ Axios.defaults.baseURL = import.meta.env.VITE_REACT_APP_SERVER_DOMAIN;
 
 export async function SignUp(credentials) {
   try {
-    const { data: { msg } } = await Axios.post('http://localhost:3500/api/register', credentials);
+    const { data: { msg } } = await Axios.post('/api/register', credentials);
     return Promise.resolve(msg);
   } catch (error) {
     return Promise.reject({ error });
@@ -13,7 +13,7 @@ export async function SignUp(credentials) {
 
 export async function loginUser(credentials) {
   try {
-    const { data } = await Axios.post('http://localhost:3500/api/login', credentials);
+    const { data } = await Axios.post('/api/login', credentials);
     
     // Store user info in sessionStorage
     console.log(data.user.organizationName);
@@ -44,7 +44,7 @@ export async function AddLocation(location_name, latitude, longitude) {
     const user = sessionStorage.getItem("email");
 console.log(user);
     // Make the API call with email, location_name, lat, and lng
-    const { data: { msg } } = await Axios.post('http://localhost:3500/api/visualizations', {
+    const { data: { msg } } = await Axios.post('/api/visualizations', {
       email: user,
       location_name: location_name,
        latitude: latitude,
@@ -73,7 +73,7 @@ export async function GetUserLocations() {
     }
 
     // Send GET request to the server with the user's email in the headers
-    const { data } = await Axios.get('http://localhost:3500/api/visualizations', {
+    const { data } = await Axios.get('/api/visualizations', {
       headers: { "User-Email": user }, // Send email in headers for authorization
     });
 
@@ -103,7 +103,7 @@ export async function DeleteLocation(location_name) {
       }
 
       // Make sure to include the email in the headers and location_name in the URL
-      const { data: { msg } } = await Axios.delete(`http://localhost:3500/api/visualizations?location_name=${encodeURIComponent(location_name)}`, {
+      const { data: { msg } } = await Axios.delete(`/api/visualizations?location_name=${encodeURIComponent(location_name)}`, {
           headers: {
               "user-email": user,
           }
