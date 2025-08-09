@@ -11,7 +11,8 @@ const corsOptions = {
 module.exports = async function handler(req, res) {
   // Handle CORS
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', corsOptions.origin.join(','));
+    const allowedOrigin = corsOptions.origin.includes(req.headers.origin) ? req.headers.origin : corsOptions.origin[0];
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Methods', corsOptions.methods.join(','));
     res.setHeader('Access-Control-Allow-Headers', corsOptions.allowedHeaders.join(','));
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -19,7 +20,8 @@ module.exports = async function handler(req, res) {
   }
 
   // Set CORS headers for actual request
-  res.setHeader('Access-Control-Allow-Origin', corsOptions.origin.includes(req.headers.origin) ? req.headers.origin : corsOptions.origin[0]);
+  const allowedOrigin = corsOptions.origin.includes(req.headers.origin) ? req.headers.origin : corsOptions.origin[0];
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'POST') {
