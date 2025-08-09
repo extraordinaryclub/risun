@@ -47,10 +47,28 @@ const Login = () => {
     },
   });
 
+  // Debug logging
+  console.log('🔍 LOGIN PAGE DEBUG - Backend URL:', import.meta.env.VITE_REACT_APP_SERVER_DOMAIN);
+  console.log('🔍 LOGIN PAGE DEBUG - All env vars:', import.meta.env);
+
   return (
     <div className="relative h-screen flex items-center justify-center">
-      {/* Debug Environment Variables */}
-      <DebugEnv />
+      {/* Debug Environment Variables - Inline */}
+      <div style={{ 
+        position: 'fixed', 
+        top: '10px', 
+        right: '10px', 
+        background: 'red', 
+        color: 'white', 
+        padding: '10px',
+        zIndex: 9999,
+        fontSize: '12px',
+        maxWidth: '300px'
+      }}>
+        <div>Backend URL: {import.meta.env.VITE_REACT_APP_SERVER_DOMAIN || 'UNDEFINED'}</div>
+        <div>Mode: {import.meta.env.MODE}</div>
+        <div>Prod: {import.meta.env.PROD ? 'true' : 'false'}</div>
+      </div>
       
       {/* Background Image */}
       <div
