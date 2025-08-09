@@ -1,29 +1,26 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require("morgan");
-const router = require("../Router/router");
+// Health check endpoint for Vercel
+export default function handler(req, res) {
+  // Handle CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-const app = express();
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-app.use(express.json());
-app.use(morgan('tiny'));
-app.disable('x-powered-by');
-
-app.use(cors({
-  origin: ["https://risun.vercel.app", "http://localhost:5173", "http://localhost:3000"],
-  credentials: true,
-}));
-
-// Add a root route for health check
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'RISUN Backend API is running!', 
-    status: 'healthy',
-    timestamp: new Date().toISOString()
-  });
-});
-
-app.use('/api', router);
-
-// Export for Vercel serverless functions
-module.exports = app;
+  if (req.method === 'GET') {
+    res.status(200).json({ 
+      message: 'RISUN Backend API is running!', 
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      endpoints: [
+        '/api/register - POST',
+        '/api/login - POST', 
+        '/api/visualizations - GET, POST, DELETE'
+      ]
+    });
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
+}
