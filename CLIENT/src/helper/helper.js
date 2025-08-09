@@ -149,13 +149,13 @@ export const fetchFaultPrediction = async (formData) => {
     console.log('🔍 FAULT DETECTION DEBUG - Making request to ML service');
     console.log('🔍 FAULT DETECTION DEBUG - FormData:', formData);
     
-    const response = await fetch(
-      "https://faultdetmodel-production.up.railway.app/predict/",
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+    const url = import.meta.env.VITE_FAULT_API_URL || "https://faultdetmodel-production.up.railway.app/predict/";
+    console.log('🔍 FAULT DETECTION DEBUG - Using URL:', url);
+    
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
 
     console.log('🔍 FAULT DETECTION DEBUG - Response status:', response.status);
 
