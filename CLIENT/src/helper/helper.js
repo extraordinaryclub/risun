@@ -13,8 +13,9 @@ export async function SignUp(credentials) {
     return Promise.resolve(msg);
   } catch (error) {
     console.error('❌ REGISTER DEBUG - Error:', error);
-    console.error('❌ REGISTER DEBUG - Error response:', error.response?.data);
+    console.error('❌ REGISTER DEBUG - Error response:', JSON.stringify(error.response?.data, null, 2));
     console.error('❌ REGISTER DEBUG - Error status:', error.response?.status);
+    console.error('❌ REGISTER DEBUG - Full error response:', error.response);
     
     return Promise.reject({ error: error.response?.data || error.message || 'Registration failed' });
   }
