@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require("morgan");
-const port = 3500;
 const router = require("./Router/router");
+
 const app = express();
 
 app.use(express.json());
@@ -14,9 +14,25 @@ app.use(cors({
   credentials: true,
 }));
 
+// Add a root route for health check
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'RISUN Backend API is running!', 
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.use('/api', router);
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const port = process.env.PORT || 3500;
+  app.listen(port, () => {
+    console.log(`RISUN Backend listening on port ${port}`);
+  });
+}
+
+// Export for Vercel serverless functions
+module.exports = app;
 
