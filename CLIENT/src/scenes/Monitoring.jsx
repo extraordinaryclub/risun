@@ -4,8 +4,12 @@ import { toast } from "react-hot-toast";
 import "./Monitoring.css";
 import { AddLocation, DeleteLocation, GetUserLocations } from "@/helper/helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faMap, faList } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-heatmap/leaflet-heatmap.js";
 
 const Monitoring = () => {
   const [location, setLocation] = useState("");
@@ -13,7 +17,11 @@ const Monitoring = () => {
   const [savedLocations, setSavedLocations] = useState([]); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [locationToDelete, setLocationToDelete] = useState(null);
+  const [viewMode, setViewMode] = useState("list"); // "list" or "heatmap"
+  const [weatherData, setWeatherData] = useState([]);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const textareaRef = useRef(null);
+  const mapRef = useRef(null);
 
    // Fetch saved locations on component mount
    useEffect(() => {
@@ -171,10 +179,122 @@ const Monitoring = () => {
     window.speechSynthesis.speak(utterance);
   };
 
+  // Fetch weather data for all saved locations
+  const fetchWeatherForAllLocations = async () => {
+    if (savedLocations.length === 0) {
+      toast.error("No locations to fetch weather data for");
+      return;
+    }
+
+    setIsLoadingWeather(true);
+    const API_KEY = "642979f5ee631edab3c8bb7dbbffaa6d";
+    const weatherPromises = savedLocations.map(async (location) => {
+      try {
+        const response = await axios.get(
+          `https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longitude}&appid=${API_KEY}`
+        );
+        return {
+          ...location,
+          weather: response.data,
+          temperature: response.data.main.temp - 273.15, // Convert to Celsius
+          humidity: response.data.main.humidity,
+          windSpeed: response.data.wind.speed,
+          cloudiness: response.data.clouds.all,
+        };
+      } catch (error) {
+        console.error(`Error fetching weather for ${location.location_name}:`, error);
+        return {
+          ...location,
+          weather: null,
+          temperature: null,
+          humidity: null,
+          windSpeed: null,
+          cloudiness: null,
+        };
+      }
+    });
+
+    try {
+      const weatherResults = await Promise.all(weatherPromises);
+      setWeatherData(weatherResults);
+      toast.success("Weather data loaded for heatmap");
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+      toast.error("Failed to load weather data");
+    } finally {
+      setIsLoadingWeather(false);
+    }
+  };
+
+  // Switch to heatmap view and fetch weather data
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    if (mode === "heatmap" && weatherData.length === 0) {
+      fetchWeatherForAllLocations();
+    }
+  };
+
+  // Custom marker icons for different temperature ranges
+  const getTemperatureIcon = (temp) => {
+    let color = '#3388ff'; // Default blue
+    if (temp > 30) color = '#ff4444'; // Hot - Red
+    else if (temp > 20) color = '#ff8800'; // Warm - Orange
+    else if (temp > 10) color = '#ffdd00'; // Mild - Yellow
+    else if (temp > 0) color = '#88ff88'; // Cool - Light Green
+    else color = '#4488ff'; // Cold - Blue
+
+    return L.divIcon({
+      className: 'custom-temp-marker',
+      html: `<div style="
+        background-color: ${color};
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+        color: white;
+      ">${Math.round(temp)}°</div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+    });
+  };
+
   return (
     <div className="power-prediction">
+      {/* View Mode Toggle */}
+      <div className="view-toggle-container mb-6">
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => handleViewModeChange("list")}
+            className={`view-toggle-btn ${viewMode === "list" ? "active" : ""}`}
+          >
+            <FontAwesomeIcon icon={faList} className="mr-2" />
+            List View
+          </button>
+          <button
+            onClick={() => handleViewModeChange("heatmap")}
+            className={`view-toggle-btn ${viewMode === "heatmap" ? "active" : ""}`}
+            disabled={savedLocations.length === 0}
+          >
+            <FontAwesomeIcon icon={faMap} className="mr-2" />
+            Heatmap View
+          </button>
+        </div>
+        {savedLocations.length === 0 && (
+          <p className="text-center text-gray-500 text-sm mt-2">
+            Add locations to enable heatmap view
+          </p>
+        )}
+      </div>
+
+      {viewMode === "list" && (
         <div>
-      <h2 className="font-bold my-2 text-2xl text-custom-7">Enter Your Location: </h2>
+          <h2 className="font-bold my-2 text-2xl text-custom-7">Enter Your Location: </h2>
       <textarea
         ref={textareaRef}
         placeholder="Type your location"
@@ -235,6 +355,158 @@ const Monitoring = () => {
     </ul>
   )}
 </div>
+        </div>
+      )}
+
+      {viewMode === "heatmap" && (
+        <div className="heatmap-container">
+          <div className="heatmap-header mb-4">
+            <h2 className="font-bold text-2xl text-custom-7 mb-2">Weather Heatmap</h2>
+            <div className="flex justify-between items-center">
+              <p className="text-gray-600">
+                Visual representation of weather conditions across your monitored locations
+              </p>
+              <button
+                onClick={fetchWeatherForAllLocations}
+                disabled={isLoadingWeather || savedLocations.length === 0}
+                className="refresh-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+              >
+                {isLoadingWeather ? "Loading..." : "Refresh Data"}
+              </button>
+            </div>
+          </div>
+
+          {savedLocations.length === 0 ? (
+            <div className="no-locations-message text-center py-12">
+              <FontAwesomeIcon icon={faMap} className="text-6xl text-gray-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">No Locations Added</h3>
+              <p className="text-gray-500">Switch to List View to add locations for heatmap visualization</p>
+            </div>
+          ) : (
+            <>
+              {/* Temperature Legend */}
+              <div className="temperature-legend mb-4 p-4 bg-white rounded-lg shadow-sm">
+                <h4 className="font-semibold mb-2">Temperature Scale (°C)</h4>
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                    <span className="text-sm">Cold (&lt; 0°)</span>
+                  </div>
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-green-400"></div>
+                    <span className="text-sm">Cool (0-10°)</span>
+                  </div>
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-yellow-400"></div>
+                    <span className="text-sm">Mild (10-20°)</span>
+                  </div>
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-orange-500"></div>
+                    <span className="text-sm">Warm (20-30°)</span>
+                  </div>
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                    <span className="text-sm">Hot (&gt; 30°)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Map Container */}
+              <div className="map-container bg-white rounded-lg shadow-lg overflow-hidden">
+                {weatherData.length > 0 ? (
+                  <MapContainer
+                    center={[weatherData[0].latitude, weatherData[0].longitude]}
+                    zoom={6}
+                    ref={mapRef}
+                    style={{ height: "500px", width: "100%" }}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    
+                    {weatherData.map((locationData, index) => (
+                      locationData.temperature !== null && (
+                        <Marker
+                          key={index}
+                          position={[locationData.latitude, locationData.longitude]}
+                          icon={getTemperatureIcon(locationData.temperature)}
+                        >
+                          <Popup>
+                            <div className="weather-popup">
+                              <h3 className="font-bold text-lg mb-2">{locationData.location_name}</h3>
+                              <div className="weather-details">
+                                <p><strong>Temperature:</strong> {Math.round(locationData.temperature)}°C</p>
+                                <p><strong>Humidity:</strong> {locationData.humidity}%</p>
+                                <p><strong>Wind Speed:</strong> {locationData.windSpeed} m/s</p>
+                                <p><strong>Cloudiness:</strong> {locationData.cloudiness}%</p>
+                                <p><strong>Conditions:</strong> {locationData.weather?.weather[0]?.description}</p>
+                              </div>
+                              <div className="mt-2">
+                                <Link 
+                                  to={`/location/${locationData.id}?lat=${locationData.latitude}&lng=${locationData.longitude}`}
+                                  className="text-blue-600 hover:text-blue-800 underline text-sm"
+                                >
+                                  View Detailed Weather →
+                                </Link>
+                              </div>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      )
+                    ))}
+                  </MapContainer>
+                ) : (
+                  <div className="map-placeholder flex items-center justify-center h-96 bg-gray-100">
+                    {isLoadingWeather ? (
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading weather data...</p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <FontAwesomeIcon icon={faMap} className="text-4xl text-gray-400 mb-2" />
+                        <p className="text-gray-600">Click "Refresh Data" to load weather information</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Weather Summary Cards */}
+              {weatherData.length > 0 && (
+                <div className="weather-summary mt-6">
+                  <h3 className="font-bold text-xl mb-4">Weather Summary</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {weatherData.map((locationData, index) => (
+                      locationData.temperature !== null && (
+                        <div key={index} className="weather-card bg-white p-4 rounded-lg shadow-sm border">
+                          <h4 className="font-semibold text-lg mb-2">{locationData.location_name}</h4>
+                          <div className="weather-info">
+                            <div className="flex items-center justify-between mb-2">
+                              <span>Temperature:</span>
+                              <span className="font-bold text-lg">{Math.round(locationData.temperature)}°C</span>
+                            </div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span>Solar Conditions:</span>
+                              <span className={`font-medium ${locationData.cloudiness < 30 ? 'text-green-600' : locationData.cloudiness < 70 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                {locationData.cloudiness < 30 ? 'Excellent' : locationData.cloudiness < 70 ? 'Good' : 'Poor'}
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Humidity: {locationData.humidity}% | Wind: {locationData.windSpeed} m/s
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
 {/* Modal */}
 {isModalOpen && (
