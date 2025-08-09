@@ -4,6 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { risunWhiteSymbol } from "@/assets";
 import { useDispatch } from "react-redux";
 import { login } from '../../store/authSlice';
+import DebugEnv from '../DebugEnv';
 
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from "../../helper/helper"; // Import your login helper
@@ -48,6 +49,9 @@ const Login = () => {
 
   return (
     <div className="relative h-screen flex items-center justify-center">
+      {/* Debug Environment Variables */}
+      <DebugEnv />
+      
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-100"
