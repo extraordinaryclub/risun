@@ -5,7 +5,12 @@ const FaultTestingPanel = ({ onScenarioSelect, isVisible = true }) => {
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    console.log('🔍 FaultTestingPanel: Not visible, isVisible =', isVisible);
+    return null;
+  }
+  
+  console.log('🔍 FaultTestingPanel: Rendering with', mockFaultScenarios.length, 'scenarios');
 
   const handleScenarioTest = async (scenario) => {
     setIsLoading(true);
@@ -39,7 +44,7 @@ const FaultTestingPanel = ({ onScenarioSelect, isVisible = true }) => {
   };
 
   return (
-    <div className="fixed top-4 left-4 w-80 bg-white border-2 border-blue-500 rounded-lg shadow-lg p-4 z-50 max-h-96 overflow-y-auto">
+    <div className="fixed top-4 left-4 w-80 bg-white border-4 border-red-500 rounded-lg shadow-2xl p-4 max-h-96 overflow-y-auto" style={{ zIndex: 99999, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-bold text-blue-600">🧪 Fault Testing Panel</h3>
         <span className="text-xs bg-blue-100 px-2 py-1 rounded">TESTING BRANCH</span>
