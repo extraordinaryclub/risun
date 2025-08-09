@@ -1,5 +1,4 @@
 const { register } = require('../appcontroller/controller');
-const cors = require('cors');
 
 // CORS configuration
 const corsOptions = {
@@ -9,7 +8,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Handle CORS
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', corsOptions.origin.join(','));
