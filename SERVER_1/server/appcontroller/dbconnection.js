@@ -1,6 +1,6 @@
 const { MongoClient, ObjectId } = require('mongodb');  // No need to import ObjectId
 
-const uri = 'mongodb+srv://daniyashm2022:JM3tLZuAg8pHbXdc@organizations.khdfp.mongodb.net/?retryWrites=true&w=majority&appName=organizations'; // Replace with your MongoDB Atlas connection string
+const uri = process.env.MONGODB_URI || 'mongodb+srv://daniyashm2022:JM3tLZuAg8pHbXdc@organizations.khdfp.mongodb.net/?retryWrites=true&w=majority&appName=organizations';
 let client;
 
 async function dbconnection() {
